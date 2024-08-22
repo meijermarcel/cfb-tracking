@@ -2,91 +2,97 @@ export const members = [
 	{
 		name: 'Marcel',
 		teams: [
-			'North Carolina',
-			'Wake Forest',
-			'Minnesota',
-			'Purdue',
-			'Rutgers',
-			'BYU',
+			'Oregon',
+			'LSU',
+			'Notre Dame',
 			'Oklahoma',
-			'Texas',
-			'Arizona St.',
+			'NC State',
+			'Wisconsin',
+			'Kentucky',
+			'Cincinnati',
 			'UCLA',
-			'Alabama',
-			'Florida',
-			'South Carolina'
+			'Miss. State',
+			'Wake Forest'
+		]
+	},
+	{
+		name: 'Matt',
+		teams: [
+			'Texas',
+			'Ole Miss',
+			'Tennessee',
+			'USC',
+			'Texas Tech',
+			'Washington',
+			'West Virginia',
+			'Georgia Tech',
+			'Stanford',
+			'Duke',
+			'Illinois'
 		]
 	},
 	{
 		name: 'Nate',
 		teams: [
-			'Louisville',
-			'Syracuse',
-			'Ohio State',
-			'Penn State',
+			'Alabama',
+			'Missouri',
 			'Kansas',
-			'Kansas State',
-			'Oklahoma State',
-			'Texas Tech',
-			'Arizona',
-			'California',
-			'Washington',
-			'LSU',
-			'Missouri'
+			'Louisville',
+			'UCF',
+			'Rutgers',
+			'Auburn',
+			'Maryland',
+			'Northwestern',
+			'Baylor',
+			'Virginia'
 		]
 	},
 	{
 		name: 'Bob',
 		teams: [
-			'Clemson',
-			'NC State',
-			'Virginia',
-			'Virginia Tech',
-			'Iowa',
-			'Michigan St.',
-			'Wisconsin',
-			'Baylor',
-			'Cincinnati',
+			'Penn State',
+			'Florida State',
+			'Oklahoma State',
+			'Kansas State',
+			'Oregon State',
+			'Washington St.',
+			'North Carolina',
+			'Iowa St.',
 			'Colorado',
-			'USC',
-			'Ole Miss',
-			'Texas A&M'
+			'Boston College',
+			'Arkansas'
 		]
 	},
 	{
 		name: 'Tom',
 		teams: [
-			'Duke',
-			'Miami (Fla.)',
-			'Pittsburgh',
-			'Notre Dame',
-			'Illinois',
-			'Maryland',
+			'Georgia',
 			'Michigan',
-			'Iowa St.',
+			'Clemson',
+			'SMU',
+			'Texas A&M',
 			'TCU',
-			'Utah',
-			'Washington St.',
-			'Kentucky',
-			'Vanderbilt'
+			'Michigan St.',
+			'California',
+			'Florida',
+			'Minnesota',
+			'Pittsburgh'
 		]
 	},
 	{
 		name: 'Carter',
 		teams: [
-			'Florida State',
-			'Georgia Tech',
+			'Ohio State',
+			'Utah',
+			'Miami (Fla.)',
+			'Arizona',
+			'Iowa',
+			'Virginia Tech',
+			'South Carolina',
 			'Nebraska',
-			'Houston',
-			'UCF',
-			'West Virginia',
-			'Oregon',
-			'Oregon State',
-			'Arkansas',
-			'Auburn',
-			'Georgia',
-			'Miss. State',
-			'Tennessee'
+			'Syracuse',
+			'BYU',
+			'Arizona St.'
 		]
 	}
 ];
