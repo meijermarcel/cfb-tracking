@@ -92,3 +92,4 @@ export const load = async () => {
 		return { members: createInitialStandings() };
 	}
 };
+
