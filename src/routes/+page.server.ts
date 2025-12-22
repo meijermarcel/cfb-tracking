@@ -84,12 +84,42 @@ export const load = async () => {
 			'Standings parsed successfully:',
 			standings.map((m) => `${m.name}: ${m.wins}-${m.losses}`)
 		);
-		return { members: standings };
+		
+		// Convert class instances to plain objects for serialization
+		const serializedMembers = standings.map((member) => ({
+			name: member.name,
+			wins: member.wins,
+			losses: member.losses,
+			teams: member.teams.map((team) => ({
+				name: team.name,
+				wins: team.wins,
+				losses: team.losses,
+				img: team.img
+			})),
+			gamesBehind: member.gamesBehind,
+			collapsed: member.collapsed
+		}));
+		
+		return { members: serializedMembers };
 	} catch (error: any) {
 		console.error('Error fetching standings:', error.message);
 		console.error('Error details:', error);
 		// Return empty standings on error - don't throw to avoid breaking the page
-		return { members: createInitialStandings() };
+		const emptyStandings = createInitialStandings();
+		const serializedEmpty = emptyStandings.map((member) => ({
+			name: member.name,
+			wins: member.wins,
+			losses: member.losses,
+			teams: member.teams.map((team) => ({
+				name: team.name,
+				wins: team.wins,
+				losses: team.losses,
+				img: team.img
+			})),
+			gamesBehind: member.gamesBehind,
+			collapsed: member.collapsed
+		}));
+		return { members: serializedEmpty };
 	}
 };
 
