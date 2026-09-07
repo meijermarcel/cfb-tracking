@@ -1,98 +1,98 @@
 export const members = [
 	{
-		name: 'Marcel',
-		teams: [
-			'Texas',
-			'Arizona St.',
-			'SMU',
-			'Illinois',
-			'Utah',
-			'Missouri',
-			'Wisconsin',
-			'Boston College',
-			'Michigan St.',
-			'Arizona',
-			'Miss. State'
-		]
-	},
-	{
 		name: 'Matt',
 		teams: [
-			'Ohio State',
-			'Miami (Fla.)',
-			'Indiana',
-			'Iowa St.',
-			'Auburn',
-			'Florida State',
-			'Minnesota',
-			'Virginia',
-			'Cincinnati',
-			'Arkansas',
-			'Wake Forest'
+			'Notre Dame',
+			'Penn State',
+			'BYU',
+			'Iowa',
+			'Clemson',
+			'Pittsburgh',
+			'Missouri',
+			'North Carolina',
+			'Georgia Tech',
+			'Maryland',
+			'Stanford'
 		]
 	},
 	{
 		name: 'Nate',
 		teams: [
-			'Georgia',
-			'South Carolina',
-			'Nebraska',
-			'USC',
-			'Kansas State',
-			'Oklahoma',
-			'UCF',
-			'TCU',
-			'Iowa',
-			'Maryland',
-			'Oklahoma State'
-		]
-	},
-	{
-		name: 'Bob',
-		teams: [
-			'Alabama',
 			'Oregon',
-			'BYU',
-			'Ole Miss',
-			'Texas Tech',
-			'Texas A&M',
-			'Duke',
-			'Louisville',
-			'West Virginia',
-			'Pittsburgh',
-			'Syracuse'
-		]
-	},
-	{
-		name: 'Tom',
-		teams: [
-			'Notre Dame',
-			'Tennessee',
+			'Texas',
 			'Michigan',
-			'Virginia Tech',
-			'LSU',
-			'UConn',
-			'Baylor',
-			'Colorado',
-			'Rutgers',
+			'Kansas State',
+			'Arizona',
+			'Florida',
+			'Wisconsin',
+			'Arizona St.',
+			'TCU',
 			'NC State',
-			'Houston'
+			'Rutgers'
 		]
 	},
 	{
 		name: 'Carter',
 		teams: [
-			'Penn State',
-			'Clemson',
-			'Kansas',
-			'Florida',
-			'North Carolina',
-			'Georgia Tech',
+			'Miami (Fla.)',
+			'Georgia',
+			'Oklahoma',
+			'Louisville',
+			'Houston',
+			'Illinois',
+			'Oklahoma State',
+			'Duke',
+			'UCLA',
+			'Baylor',
+			'Kentucky'
+		]
+	},
+	{
+		name: 'Bob',
+		teams: [
+			'Indiana',
+			'Utah',
+			'Alabama',
+			'Navy',
 			'Washington',
+			'Virginia Tech',
+			'Army',
+			'South Carolina',
+			'Minnesota',
+			'California',
+			'Wake Forest'
+		]
+	},
+	{
+		name: 'Tom',
+		teams: [
+			'Ohio State',
+			'Texas Tech',
+			'Ole Miss',
+			'Virginia',
+			'Florida State',
+			'Tennessee',
+			'Air Force',
+			'Cincinnati',
+			'West Virginia',
+			'Syracuse',
+			'Arkansas'
+		]
+	},
+	{
+		name: 'Marcel',
+		teams: [
+			'LSU',
+			'USC',
+			'Texas A&M',
+			'SMU',
 			'Vanderbilt',
-			'Oregon State',
-			'Kentucky',
-			'Washington St.'
+			'Nebraska',
+			'Auburn',
+			'Kansas',
+			'UCF',
+			'Michigan St.',
+			'Iowa St.'
 		]
 	}
 ];
@@ -100,62 +100,78 @@ export const members = [
 export const weeks = [
 	{
 		week_number: 1,
-		period: 'Aug 26 - Sep 4'
+		period: 'Aug 29 - Sep 10'
 	},
 	{
 		week_number: 2,
-		period: 'Sep 5 - Sep 11'
+		period: 'Sep 11 - Sep 17'
 	},
 	{
 		week_number: 3,
-		period: 'Sep 12 - Sep 18'
+		period: 'Sep 18 - Sep 24'
 	},
 	{
 		week_number: 4,
-		period: 'Sep 19 - Sep 25'
+		period: 'Sep 25 - Oct 1'
 	},
 	{
 		week_number: 5,
-		period: 'Sep 26 - Oct 2'
+		period: 'Oct 2 - Oct 8'
 	},
 	{
 		week_number: 6,
-		period: 'Oct 3 - Oct 9'
+		period: 'Oct 9 - Oct 15'
 	},
 	{
 		week_number: 7,
-		period: 'Oct 10 - Oct 16'
+		period: 'Oct 16 - Oct 22'
 	},
 	{
 		week_number: 8,
-		period: 'Oct 17 - Oct 23'
+		period: 'Oct 23 - Oct 29'
 	},
 	{
 		week_number: 9,
-		period: 'Oct 24 - Oct 30'
+		period: 'Oct 30 - Nov 5'
 	},
 	{
 		week_number: 10,
-		period: 'Oct 31 - Nov 6'
+		period: 'Nov 6 - Nov 12'
 	},
 	{
 		week_number: 11,
-		period: 'Nov 7 - Nov 13'
+		period: 'Nov 13 - Nov 19'
 	},
 	{
 		week_number: 12,
-		period: 'Nov 14 - Nov 20'
+		period: 'Nov 20 - Nov 26'
 	},
 	{
 		week_number: 13,
-		period: 'Nov 21 - Nov 27'
+		period: 'Nov 27 - Dec 3'
 	},
 	{
 		week_number: 14,
-		period: 'Nov 28 - Dec 4'
-	},
-	{
-		week_number: 15,
-		period: 'Dec 5 - Dec 11'
+		period: 'Dec 4 - Dec 10'
 	}
 ];
+
+export const seasonYear = 2026;
+
+/**
+ * Saturday of Week 1. Weeks run Friday–Thursday around each Saturday slate;
+ * Week 1 reaches back to the Aug 29 opener (see the `weeks` periods above).
+ */
+const week1Saturday = new Date(2026, 8, 5);
+
+/** Week number for a given date, clamped to the season's bounds. */
+export function currentWeek(now: Date = new Date()): number {
+	for (const week of weeks) {
+		// Each week closes on the Thursday five days after its Saturday.
+		const end = new Date(week1Saturday);
+		end.setDate(end.getDate() + 7 * (week.week_number - 1) + 5);
+		end.setHours(23, 59, 59, 999);
+		if (now <= end) return week.week_number;
+	}
+	return weeks[weeks.length - 1].week_number;
+}

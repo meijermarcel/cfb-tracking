@@ -1,336 +1,402 @@
 <script lang="ts">
-	import type { Standings } from "$lib/types";
-    import { slide } from "svelte/transition";
-    import { quintOut } from "svelte/easing";
-    import StandingsTable from "$lib/components/standings-table/StandingsTable.svelte";
+	import { slide } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
+	import TeamSheet from '$lib/components/team-sheet/TeamSheet.svelte';
+	import { members as league } from '$lib/global-var';
 
-    export let data: Standings;
+	// Rosters are 11 deep, but the loader only returns teams that have played,
+	// so show progress against the drafted roster rather than a bare count.
+	const roster: Record<string, number> = Object.fromEntries(
+		league.map((m) => [m.name, m.teams.length])
+	);
+
+	export let data;
+
+	let open: Record<string, boolean> = {};
+
+	function toggle(name: string) {
+		open = { ...open, [name]: !open[name] };
+	}
+
+	$: members = data.members ?? [];
+	$: maxWins = Math.max(...members.map((m) => m.wins), 1);
+	$: played = members.reduce((n, m) => n + m.wins + m.losses, 0);
+	$: leader = members[0];
+	$: empty = played === 0;
 </script>
 
+<header class="head">
+	<div class="title">
+		<h1>Standings</h1>
+		<span class="count fig">{members.length}</span>
+	</div>
+	<hr class="rule" />
+	<p class="sub">
+		{#if empty}
+			<span class="eyebrow">Awaiting first kickoff</span>
+		{:else}
+			<span class="eyebrow">{played} games played</span>
+			<span class="dot" aria-hidden="true"></span>
+			<span class="eyebrow lead">{leader.name} leads</span>
+		{/if}
+	</p>
+</header>
+
+{#if empty}
+	<div class="empty">
+		<div class="empty-mark" aria-hidden="true">—</div>
+		<h2>No results yet</h2>
+		<p>Records will appear here once teams start playing.</p>
+	</div>
+{:else}
+	<ol class="board">
+		{#each members as member, i (member.name)}
+			{@const isOpen = !!open[member.name]}
+			<li class="row" class:first={i === 0} class:open={isOpen} style="--i:{i}">
+				<button
+					class="line"
+					aria-expanded={isOpen}
+					aria-label="{member.name}, {member.wins} wins {member.losses} losses. Show teams."
+					on:click={() => toggle(member.name)}
+				>
+					<span class="rank fig">{String(i + 1).padStart(2, '0')}</span>
+
+					<span class="who">
+						<span class="name">{member.name}</span>
+						<span class="meta">
+							<span class="fig">{member.teams.length}</span><span class="of">/</span><span
+								class="fig">{roster[member.name] ?? member.teams.length}</span
+							>
+							played
+							<span class="gap" aria-hidden="true"></span>
+							{#if i === 0}
+								<span class="tag">Leader</span>
+							{:else if member.gamesBehind === 0}
+								<span class="tag">Tied</span>
+							{:else}
+								<span class="fig">{member.gamesBehind}</span> GB
+							{/if}
+						</span>
+					</span>
+
+					<span class="record">
+						<span class="w fig">{member.wins}</span>
+						<span class="slash" aria-hidden="true">–</span>
+						<span class="l fig">{member.losses}</span>
+					</span>
+
+					<svg class="chev" viewBox="0 0 10 6" aria-hidden="true">
+						<path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" />
+					</svg>
+				</button>
+
+				<div class="field" aria-hidden="true">
+					<div class="turf" style="--pct:{(member.wins / maxWins) * 100}%"></div>
+				</div>
+
+				{#if isOpen}
+					<div class="sheet" transition:slide={{ duration: 280, easing: quintOut }}>
+						<TeamSheet {member} />
+					</div>
+				{/if}
+			</li>
+		{/each}
+	</ol>
+{/if}
+
 <style>
-    .container {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-lg);
-    }
+	/* ---------- header ---------- */
+	.head {
+		margin-bottom: var(--s-6);
+	}
 
-    .page-header {
-        text-align: center;
-        margin-bottom: var(--spacing-xl);
-    }
+	.title {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--s-3);
+		margin-bottom: var(--s-3);
+	}
 
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: var(--primary-color);
-        margin: 0 0 var(--spacing-sm) 0;
-    }
+	h1 {
+		font-size: clamp(3.2rem, 12vw, 5.6rem);
+		letter-spacing: -0.015em;
+	}
 
-    .page-subtitle {
-        color: var(--text-secondary);
-        font-size: 1.125rem;
-        margin: 0;
-    }
+	.count {
+		font-size: 0.8rem;
+		color: var(--accent);
+		padding-top: 0.5em;
+	}
 
-    .standings-grid {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-md);
-    }
+	.sub {
+		margin: var(--s-3) 0 0;
+		display: flex;
+		align-items: center;
+		gap: var(--s-3);
+		flex-wrap: wrap;
+	}
 
-    .member-card {
-        background: var(--accent-light);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--border-color);
-        overflow: hidden;
-        transition: all var(--transition-normal);
-        cursor: pointer;
-        min-height: var(--touch-target-min);
-    }
+	.dot {
+		width: 3px;
+		height: 3px;
+		background: var(--line);
+		border-radius: 50%;
+	}
 
-    .member-card:hover {
-        box-shadow: var(--shadow-lg);
-        transform: translateY(-2px);
-    }
+	.lead {
+		color: var(--accent);
+	}
 
-    .member-card.expanded {
-        box-shadow: var(--shadow-xl);
-    }
+	/* ---------- board ---------- */
+	.board {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		border-top: 1px solid var(--line);
+	}
 
-    .member-header {
-        padding: var(--spacing-lg);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
-        border-bottom: 1px solid var(--border-color);
-    }
+	.row {
+		border-bottom: 1px solid var(--line);
+		animation: rise var(--slow) var(--ease) backwards;
+		animation-delay: calc(var(--i) * 55ms);
+	}
 
-    .member-info {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-lg);
-    }
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+	}
 
-    .position-badge {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 3rem;
-        height: 3rem;
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-        color: white;
-        border-radius: var(--radius-lg);
-        font-weight: 800;
-        font-size: 1.25rem;
-        box-shadow: var(--shadow-md);
-        flex-shrink: 0;
-    }
+	.line {
+		width: 100%;
+		display: grid;
+		grid-template-columns: auto 1fr auto auto;
+		align-items: center;
+		gap: var(--s-4);
+		padding: var(--s-3) var(--s-2);
+		background: none;
+		border: 0;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		min-height: var(--tap);
+		transition: background var(--fast) var(--ease);
+	}
 
-    .member-details {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-xs);
-        flex: 1;
-        min-width: 0;
-    }
+	.line:hover {
+		background: var(--ink-800);
+	}
 
-    .member-name {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
+	/* rank */
+	.rank {
+		font-size: 1rem;
+		color: var(--chalk-3);
+		width: 2ch;
+		transition: color var(--fast) var(--ease);
+	}
 
-    .member-stats {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-        color: var(--text-secondary);
-        font-weight: 500;
-        flex-wrap: wrap;
-    }
+	.first .rank {
+		color: var(--accent);
+	}
 
-    .record-badge {
-        background: var(--success-color);
-        color: white;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        border-radius: var(--radius-md);
-        font-weight: 600;
-        font-size: 0.875rem;
-        white-space: nowrap;
-    }
+	/* name block */
+	.who {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
 
-    .games-behind {
-        background: var(--warning-color);
-        color: white;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        border-radius: var(--radius-md);
-        font-weight: 600;
-        font-size: 0.875rem;
-        white-space: nowrap;
-    }
+	.name {
+		font-family: var(--body);
+		font-weight: 600;
+		font-size: 1.6rem;
+		line-height: 1.1;
+		letter-spacing: -0.01em;
+	}
 
-    .expand-icon {
-        color: var(--text-muted);
-        transition: transform var(--transition-fast);
-        font-size: 1.5rem;
-        flex-shrink: 0;
-        width: var(--touch-target-min);
-        height: var(--touch-target-min);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+	.first .name {
+		color: var(--accent);
+	}
 
-    .member-card.expanded .expand-icon {
-        transform: rotate(180deg);
-    }
+	.meta {
+		display: flex;
+		align-items: center;
+		gap: var(--s-2);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		font-family: var(--display);
+		font-weight: 700;
+		color: var(--chalk-3);
+	}
 
-    .team-container {
-        padding: var(--spacing-lg);
-        background: var(--accent-light);
-    }
+	.meta .fig {
+		font-family: var(--figure);
+		font-weight: 400;
+		letter-spacing: 0;
+		color: var(--chalk-2);
+	}
 
-    /* Mobile-first responsive design */
-    @media (max-width: 768px) {
-        .page-title {
-            font-size: 2rem;
-        }
-        
-        .page-subtitle {
-            font-size: 1rem;
-        }
-        
-        .member-header {
-            padding: var(--spacing-md);
-            flex-direction: row;
-            gap: var(--spacing-md);
-            text-align: left;
-        }
-        
-        .member-info {
-            flex-direction: row;
-            gap: var(--spacing-md);
-            width: auto;
-            flex: 1;
-        }
-        
-        .member-stats {
-            flex-direction: row;
-            gap: var(--spacing-sm);
-            width: auto;
-        }
-        
-        .member-name {
-            font-size: 1.25rem;
-            text-align: left;
-        }
-        
-        .position-badge {
-            width: 2.5rem;
-            height: 2.5rem;
-            font-size: 1rem;
-        }
-        
-        .expand-icon {
-            width: 2.5rem;
-            height: 2.5rem;
-            font-size: 1.25rem;
-        }
-        
-        .team-container {
-            padding: var(--spacing-md);
-        }
-        
-        .member-card:hover {
-            transform: none;
-        }
-    }
+	.of {
+		color: var(--line);
+		margin-inline: 0.1em;
+	}
 
-    @media (max-width: 480px) {
-        .page-title {
-            font-size: 1.75rem;
-        }
-        
-        .page-subtitle {
-            font-size: 0.875rem;
-        }
-        
-        .member-header {
-            padding: var(--spacing-sm);
-            gap: var(--spacing-sm);
-        }
-        
-        .member-info {
-            gap: var(--spacing-sm);
-        }
-        
-        .member-name {
-            font-size: 1.125rem;
-        }
-        
-        .position-badge {
-            width: 2rem;
-            height: 2rem;
-            font-size: 0.875rem;
-        }
-        
-        .expand-icon {
-            width: 2rem;
-            height: 2rem;
-            font-size: 1rem;
-        }
-        
-        .team-container {
-            padding: var(--spacing-sm);
-        }
-        
-        .record-badge,
-        .games-behind {
-            font-size: 0.75rem;
-            padding: var(--spacing-xs);
-        }
-        
-        .member-stats {
-            gap: var(--spacing-xs);
-        }
-    }
+	.gap {
+		width: 10px;
+		height: 1px;
+		background: var(--line);
+	}
 
-    /* Landscape mobile optimization */
-    @media (max-width: 768px) and (orientation: landscape) {
-        .member-header {
-            flex-direction: row;
-            text-align: left;
-        }
-        
-        .member-info {
-            flex-direction: row;
-            width: auto;
-        }
-        
-        .member-stats {
-            flex-direction: row;
-            width: auto;
-        }
-        
-        .member-name {
-            text-align: left;
-        }
-    }
+	.tag {
+		color: var(--accent-deep);
+	}
+
+	/* record */
+	.record {
+		display: flex;
+		align-items: baseline;
+		gap: 0.15em;
+		font-size: 1.5rem;
+	}
+
+	.w {
+		color: var(--chalk);
+	}
+
+	.slash {
+		color: var(--chalk-3);
+		font-size: 0.9em;
+	}
+
+	.l {
+		color: var(--chalk-3);
+	}
+
+	.first .w {
+		color: var(--accent);
+	}
+
+	/* chevron */
+	.chev {
+		width: 12px;
+		height: 8px;
+		color: var(--chalk-3);
+		transition:
+			transform var(--mid) var(--ease),
+			color var(--fast) var(--ease);
+	}
+
+	.line:hover .chev {
+		color: var(--chalk);
+	}
+
+	.open .chev {
+		transform: rotate(180deg);
+		color: var(--accent);
+	}
+
+	/* ---------- the field: wins as yardage ---------- */
+	.field {
+		height: 7px;
+		margin: 0 var(--s-2) var(--s-3);
+		background-color: var(--ink-600);
+		background-image: repeating-linear-gradient(
+			90deg,
+			transparent 0 calc(10% - 1px),
+			rgba(236, 231, 217, 0.14) calc(10% - 1px) 10%
+		);
+		overflow: hidden;
+	}
+
+	.turf {
+		height: 100%;
+		width: var(--pct);
+		/* Chalk for the pack, flag yellow for the leader — same weight so
+		   the lengths stay comparable at a glance. */
+		background: linear-gradient(90deg, #24463a, var(--chalk-3));
+		transform-origin: left;
+		animation: drive 900ms var(--ease) backwards;
+		animation-delay: calc(var(--i) * 55ms + 120ms);
+		transition: filter var(--fast) var(--ease);
+	}
+
+	.first .turf {
+		background: linear-gradient(90deg, var(--accent-deep), var(--accent));
+	}
+
+	.row:hover .turf {
+		filter: brightness(1.35);
+	}
+
+	@keyframes drive {
+		from {
+			transform: scaleX(0);
+		}
+	}
+
+	.sheet {
+		padding: 0 var(--s-2) var(--s-5);
+	}
+
+	/* ---------- empty ---------- */
+	.empty {
+		border: 1px solid var(--line);
+		padding: var(--s-8) var(--s-5);
+		text-align: center;
+	}
+
+	.empty-mark {
+		font-family: var(--display);
+		font-size: 3rem;
+		color: var(--line);
+		line-height: 1;
+	}
+
+	.empty h2 {
+		font-size: 1.6rem;
+		margin: var(--s-3) 0 var(--s-2);
+	}
+
+	.empty p {
+		margin: 0;
+		color: var(--chalk-3);
+		font-size: 0.95rem;
+	}
+
+	/* ---------- mobile ---------- */
+	@media (max-width: 640px) {
+		.line {
+			grid-template-columns: auto 1fr auto;
+			gap: var(--s-3);
+			padding: var(--s-3) 0;
+		}
+
+		.chev {
+			display: none;
+		}
+
+		.name {
+			font-size: 1.25rem;
+		}
+
+		.record {
+			font-size: 1.2rem;
+		}
+
+		.meta {
+			font-size: 0.66rem;
+		}
+
+		.field {
+			margin-inline: 0;
+		}
+
+		.sheet {
+			padding-inline: 0;
+		}
+	}
 </style>
-
-<div class="container">
-    <!-- <div class="page-header">
-        <h1 class="page-title">🏈 Standings</h1>
-        <p class="page-subtitle">College Football 2025 Season</p>
-    </div> -->
-
-    <div class="standings-grid">
-        {#each data.members as member, i}
-            <div 
-                class="member-card"
-                class:expanded={!member.collapsed}
-                role="button"
-                tabindex="0"
-                on:click={() => member.collapsed = !member.collapsed}
-                on:keydown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        member.collapsed = !member.collapsed;
-                    }
-                }}
-            >
-                <div class="member-header">
-                    <div class="member-info">
-                        <div class="position-badge">
-                            {i + 1}
-                        </div>
-                        <div class="member-details">
-                            <h3 class="member-name">{member.name}</h3>
-                            <div class="member-stats">
-                                <span class="record-badge">{member.wins}-{member.losses}</span>
-                                {#if member.gamesBehind > 0}
-                                    <span class="games-behind">{member.gamesBehind} GB</span>
-                                {/if}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="expand-icon">
-                        ▼
-                    </div>
-                </div>
-                
-                {#if !member.collapsed}
-                    <div class="team-container" transition:slide={{ duration: 300, easing: quintOut }}>
-                        <StandingsTable {member} />
-                    </div>
-                {/if}
-            </div>
-        {/each}
-    </div>
-</div>

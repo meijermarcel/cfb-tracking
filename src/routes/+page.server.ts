@@ -84,7 +84,7 @@ export const load = async () => {
 			'Standings parsed successfully:',
 			standings.map((m) => `${m.name}: ${m.wins}-${m.losses}`)
 		);
-		
+
 		// Convert class instances to plain objects for serialization
 		const serializedMembers = standings.map((member) => ({
 			name: member.name,
@@ -99,7 +99,7 @@ export const load = async () => {
 			gamesBehind: member.gamesBehind,
 			collapsed: member.collapsed
 		}));
-		
+
 		return { members: serializedMembers };
 	} catch (error: any) {
 		console.error('Error fetching standings:', error.message);
@@ -122,4 +122,3 @@ export const load = async () => {
 		return { members: serializedEmpty };
 	}
 };
-
